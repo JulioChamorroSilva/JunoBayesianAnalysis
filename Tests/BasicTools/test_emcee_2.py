@@ -100,3 +100,17 @@ plt.ylabel("y");
 
 plt.show()
 
+# now arviz plots
+import arviz as az
+
+var_names = ['m','b','f']
+emcee_data = az.from_emcee(sampler, var_names=var_names)
+az.plot_posterior(emcee_data, var_names=var_names[:])
+plt.show()
+
+# now trace plot
+az.plot_trace(emcee_data, var_names=var_names)
+plt.show()
+
+az.plot_pair(emcee_data, var_names=var_names, kind='kde')
+plt.show()
