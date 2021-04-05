@@ -46,7 +46,41 @@ Data = np.array([
    [69.1,3140]])
 print("Data: ", Data)
 
-plt.scatter(Data[:,0],Data[:,1])
+
+# Defining data arrays
+Data_x = Data[:,0]
+Data_y = Data[:,1]
+Data_yerr = np.array(len(Data_y)*[1])
+
+# now least square fit
+A = np.vander(Data_x, 2)
+C = np.diag(Data_yerr * Data_yerr)
+ATA = np.dot(A.T, A / (Data_yerr ** 2)[:, None])
+cov = np.linalg.inv(ATA)
+w = np.linalg.solve(ATA, np.dot(A.T, Data_y / Data_yerr ** 2))
+m_ls = w[0]
+b_ls = w[1]
+
+print("Least-squares estimates:")
+print("m = {0:.3f} ± {1:.3f}".format(w[0], np.sqrt(cov[0, 0])))
+print("b = {0:.3f} ± {1:.3f}".format(w[1], np.sqrt(cov[1, 1])))
+
+
+
+# now plotting: scatter plot and residuals
+x_min = min(Data_x)
+x_max = max(Data_x)
+x_0 = np.linspace(x_min,x_max,num=500)
+fig, axs = plt.subplots(2)
+fig.suptitle('Fitting wood hardness')
+axs[0].scatter(Data_x,Data_y)
+axs[0].plot(x_0,(m_ls*x_0+b_ls))
+axs[1].scatter(Data_x,Data_y-(m_ls*Data_x+b_ls))
 plt.show()
+# plotting residual histograms
+plt.hist(Data_y-(m_ls*Data_x+b_ls))
+plt.show()
+
+
 
 
