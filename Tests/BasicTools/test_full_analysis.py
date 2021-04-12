@@ -82,5 +82,66 @@ plt.hist(Data_y-(m_ls*Data_x+b_ls))
 plt.show()
 
 
+# now bayesian
+
+def log_likelihood(theta, x, y):
+    m, b, sigma   = theta      # we need 3 parameters! The error is unknown
+    model         = m * x + b
+    return -0.5 * np.sum((y - model) ** 2 / (sigma**2) ) -0.5*(sigma/100.)
+
+
+MAX_M = 1000
+MAX_B = 10000
+MAX_S = 1000
+
+def log_prior(theta):
+    m, b, sigma = theta
+    if -1.*MAX_M < m < MAX_M and -1.*MAX_B < b < MAX_B and 0. < sigma < MAX_S:
+        return 0.0
+    return -np.inf
+
+def log_probability(theta, x, y):
+    lp = log_prior(theta)
+    if not np.isfinite(lp):
+        return -np.inf
+    return lp + log_likelihood(theta, x, y)
+
+# now run MCMC:
+
+# sampling posterior
+import emcee
+
+# first find maximum likelihood
+from scipy.optimize import minimize
+np.random.seed(42)
+nll = lambda *args: -log_likelihood(*args)
+initial = np.array([50, -1000, 20]) # initial values from lest squared
+soln = minimize(nll, initial, args=(Data_x, Data_y))
+print("solution max. likelihood: ", soln)
+
+pos = soln.x + 1e-4 * np.random.randn(32, 3)
+nwalkers, ndim = pos.shape
+sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(Data_x, Data_y))
+sampler.run_mcmc(pos, 5000, progress=True);
+flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
+inds = np.random.randint(len(flat_samples), size=100)
+
+# now plotting
+
+# now arviz plots
+import arviz as az
+
+var_names = ['m','b','s']
+emcee_data = az.from_emcee(sampler, var_names=var_names)
+az.plot_posterior(emcee_data, var_names=var_names[:])
+plt.show()
+
+# now trace plot
+az.plot_trace(emcee_data, var_names=var_names)
+plt.show()
+
+az.plot_pair(emcee_data, var_names=var_names, kind='kde')
+plt.show()
+
 
 
