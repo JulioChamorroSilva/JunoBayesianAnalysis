@@ -87,7 +87,7 @@ plt.show()
 def log_likelihood(theta, x, y):
     m, b, sigma   = theta      # we need 3 parameters! The error is unknown
     model         = m * x + b
-    return -0.5 * np.sum((y - model) ** 2 / (sigma**2) ) -0.5*(sigma/100.)
+    return -0.5 * np.sum((y - model) ** 2 / (sigma**2) ) - len(x)*np.log(sigma) # is constant factor necessary?
 
 
 MAX_M = 1000
