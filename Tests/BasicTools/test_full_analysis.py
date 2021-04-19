@@ -100,11 +100,17 @@ def log_prior(theta):
         return 0.0
     return -np.inf
 
+ppc = np.zeros(len(Data_x))
+
 def log_probability(theta, x, y):
     lp = log_prior(theta)
     if not np.isfinite(lp):
-        return -np.inf
-    return lp + log_likelihood(theta, x, y)
+        return -np.inf, ppc
+    # now calculate random samples
+    for i in range(len(Data_x)):
+        ppc[i] = theta[0] * Data_x[i] + theta[1] + np.random.normal(0., theta[2])
+
+    return lp + log_likelihood(theta, x, y), ppc
 
 # now run MCMC:
 
@@ -124,6 +130,7 @@ nwalkers, ndim = pos.shape
 sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(Data_x, Data_y))
 sampler.run_mcmc(pos, 5000, progress=True);
 flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
+blobs        = sampler.get_blobs(discard=100, thin=15, flat=True)
 inds = np.random.randint(len(flat_samples), size=100)
 
 # now plotting
@@ -132,7 +139,7 @@ inds = np.random.randint(len(flat_samples), size=100)
 import arviz as az
 
 var_names = ['m','b','s']
-emcee_data = az.from_emcee(sampler, var_names=var_names)
+emcee_data = az.from_emcee(sampler, var_names=var_names, blob_names=["silly"] )
 az.plot_posterior(emcee_data, var_names=var_names[:])
 plt.show()
 
@@ -144,7 +151,9 @@ az.plot_pair(emcee_data, var_names=var_names, kind='kde', marginals=True)
 plt.show()
 
 print(flat_samples)
-
+print(blobs)
+print(blobs[0,:])
+print(blobs[:,0]) # this is the ppd of the first data
 
 inds = np.random.randint(len(flat_samples), size=100)
 for ind in inds:
