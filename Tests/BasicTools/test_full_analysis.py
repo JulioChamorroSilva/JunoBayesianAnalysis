@@ -140,8 +140,21 @@ plt.show()
 az.plot_trace(emcee_data, var_names=var_names)
 plt.show()
 
-az.plot_pair(emcee_data, var_names=var_names, kind='kde')
+az.plot_pair(emcee_data, var_names=var_names, kind='kde', marginals=True)
 plt.show()
 
+print(flat_samples)
 
 
+inds = np.random.randint(len(flat_samples), size=100)
+for ind in inds:
+    sample = flat_samples[ind]
+    loc_m = sample[0]
+    loc_b = sample[1]
+    plt.plot(x_0, loc_m * x_0 + loc_b, "C1", alpha=0.1)
+
+plt.scatter(Data_x,Data_y)
+plt.legend(fontsize=14)
+plt.xlabel("x")
+plt.ylabel("y");
+plt.show()
