@@ -4,6 +4,13 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import emcee
+from scipy.optimize import minimize
+import arviz as az
+
+
+NSAMPLES = 10000
+np.random.seed(20210426)
 
 print("Bayesian model of Density and Hardness of Australian Timber")
 
@@ -50,7 +57,7 @@ print("Data: ", Data)
 # Defining data arrays
 Data_x = Data[:,0]
 Data_y = Data[:,1]
-Data_yerr = np.array(len(Data_y)*[1])
+Data_yerr = np.array(len(Data_y)*[1]) # just silly errors for LSF
 
 # now least square fit
 A = np.vander(Data_x, 2)
@@ -87,7 +94,7 @@ plt.show()
 def log_likelihood(theta, x, y):
     m, b, sigma   = theta      # we need 3 parameters! The error is unknown
     model         = m * x + b
-    return -0.5 * np.sum((y - model) ** 2 / (sigma**2) ) - len(x)*np.log(sigma) # is constant factor necessary?
+    return -0.5 * np.sum((y - model) ** 2 / (sigma**2) ) - len(x)*np.log(sigma) - len(x) * np.log(np.sqrt(2 * np.pi))
 
 
 MAX_M = 1000
@@ -115,11 +122,8 @@ def log_probability(theta, x, y):
 # now run MCMC:
 
 # sampling posterior
-import emcee
 
 # first find maximum likelihood
-from scipy.optimize import minimize
-np.random.seed(42)
 nll = lambda *args: -log_likelihood(*args)
 initial = np.array([50, -1000, 20]) # initial values from lest squared
 soln = minimize(nll, initial, args=(Data_x, Data_y))
@@ -128,7 +132,7 @@ print("solution max. likelihood: ", soln)
 pos = soln.x + 1e-4 * np.random.randn(32, 3)
 nwalkers, ndim = pos.shape
 sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(Data_x, Data_y))
-sampler.run_mcmc(pos, 5000, progress=True);
+sampler.run_mcmc(pos, NSAMPLES, progress=True);
 flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
 blobs        = sampler.get_blobs(discard=100, thin=15, flat=True)
 inds = np.random.randint(len(flat_samples), size=100)
@@ -136,7 +140,6 @@ inds = np.random.randint(len(flat_samples), size=100)
 # now plotting
 
 # now arviz plots
-import arviz as az
 
 var_names = ['m','b','s']
 emcee_data = az.from_emcee(sampler, var_names=var_names, blob_names=["silly"] )
@@ -167,3 +170,11 @@ plt.legend(fontsize=14)
 plt.xlabel("x")
 plt.ylabel("y");
 plt.show()
+
+for i in range(len(Data_x)):
+    plt.hist(blobs[:,i], bins=20 )
+    plt.axvline(Data_y[i], color='r')
+    plt.show()
+
+
+
