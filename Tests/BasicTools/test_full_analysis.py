@@ -8,6 +8,7 @@ import emcee
 from scipy.optimize import minimize
 import arviz as az
 
+plt.style.use('Styles/Paper.mplstyle')
 
 NSAMPLES = 10000
 np.random.seed(20210426)
