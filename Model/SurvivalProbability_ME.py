@@ -24,4 +24,4 @@ p = 1 - (((np.sin(2*theta13))**2)*(((np.cos(theta12))**2)\
 *((np.sin(delta31))**2)+ ((np.sin(theta12))**2)*((np.sin(delta32))**2)))-\
 ((np.cos(theta13))**4)*((np.sin(2*theta12))**2)*((np.sin(delta21))**2)
 
-print(p(5))
+print(p)
