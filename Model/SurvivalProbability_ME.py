@@ -14,14 +14,18 @@ class SurvivalProbability_ME:
 
 import numpy as np
 
-theta13 = 1
-theta12 = 1
-delta31 = 1
-delta32 = 1
-delta21 = 1
+theta_13 = 1
+theta_12 = 1
+delta_31 = 1
+delta_32 = 1
+delta_21 = 1
 
-p = 1 - (((np.sin(2*theta13))**2)*(((np.cos(theta12))**2)\
-*((np.sin(delta31))**2)+ ((np.sin(theta12))**2)*((np.sin(delta32))**2)))-\
-((np.cos(theta13))**4)*((np.sin(2*theta12))**2)*((np.sin(delta21))**2)
+p = 1 - (((np.sin(2*theta_13))**2)*(((np.cos(theta_12))**2)\
+*((np.sin(delta_31))**2)+ ((np.sin(theta_12))**2)*((np.sin(delta_32))**2)))-\
+((np.cos(theta_13))**4)*((np.sin(2*theta_12))**2)*((np.sin(delta_21))**2)
+
+# delta_ij= ((mi**2 - mj**2)*L)/(4*E)
+
+# (delta_mij)**m = np.sqrt((np.cos(2*theta_ij-A/delta_mij)**2)+(np.sin(2*theta_ij)**2))
 
 print(p)
