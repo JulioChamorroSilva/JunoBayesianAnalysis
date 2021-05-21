@@ -1,31 +1,26 @@
+import numpy as np
+import Model.Commons as com
+
 class SurvivalProbability_ME:
     """ This class represents the electron anti-neutrino oscillation probability
-    to be used in JUNO for precision oscillation measurements and mass hierarqui, 
+    to be used in JUNO for precision oscillation measurements and mass hierarchy, 
     including matter effects """
     def __init__(self, *params):
             self._DelM2_21 = params[0]
             self._DelM2_31 = params[1]
             self._Theta_12 = params[2]
             self._Theta_13 = params[3]
-            self._Sign     = params[4]
-        
-    def Pee( self, E):
-        return 1.
+            self._Ne       = params[4]
 
-import numpy as np
+    def Pee( self, E, L):
+        # missing matter effect
+        #A        = -2. * np.sqrt(2) * com.Gf * self._Ne * E         
+        DelM2_32 = self._DelM2_31 - self._DelM2_21 # m_3^2 - m_2^2 = ( m_3^2 - m_1^2 ) - ( m_2^2 - m_1^2 )
+        Delta31  = self._DelM2_31 * L / ( 4 * E )
+        Delta32  =       DelM2_32 * L / ( 4 * E )
+        Delta21  = self._DelM2_21 * L / ( 4 * E )
+        term1   = np.sin( 2*self._Theta_13 )**2 * np.cos(   self._Theta_12 )**2 * np.sin( Delta31 )**2 
+        term2   = np.sin( 2*self._Theta_13 )**2 * np.sin(   self._Theta_12 )**2 * np.sin( Delta32 )**2
+        term3   = np.cos(   self._Theta_13 )**4 * np.sin( 2*self._Theta_12 )**2 * np.sin( Delta21 )**2
+        return  1 - term1 - term2 - term3
 
-theta_13 = 1
-theta_12 = 1
-delta_31 = 1
-delta_32 = 1
-delta_21 = 1
-
-p = 1 - (((np.sin(2*theta_13))**2)*(((np.cos(theta_12))**2)\
-*((np.sin(delta_31))**2)+ ((np.sin(theta_12))**2)*((np.sin(delta_32))**2)))-\
-((np.cos(theta_13))**4)*((np.sin(2*theta_12))**2)*((np.sin(delta_21))**2)
-
-# delta_ij= ((mi**2 - mj**2)*L)/(4*E)
-
-# (delta_mij)**m = np.sqrt((np.cos(2*theta_ij-A/delta_mij)**2)+(np.sin(2*theta_ij)**2))
-
-print(p)

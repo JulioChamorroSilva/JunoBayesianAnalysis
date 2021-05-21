@@ -37,7 +37,9 @@ plt.hist(samples[:, 0], 100, color="k", histtype="step")
 plt.xlabel(r"$\theta_1$")
 plt.ylabel(r"$p(\theta_1)$")
 plt.gca().set_yticks([]);
-plt.show()
+#plt.show()
+plt.savefig('test_emcee_fig1.svg', format='svg', dpi=1200)
+plt.close()
 
 print("Mean acceptance fraction: {0:.3f}".format(np.mean(sampler.acceptance_fraction)))
 

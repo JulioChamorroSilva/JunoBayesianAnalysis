@@ -43,12 +43,15 @@ sampler.run_mcmc(pos, draws);
 var_names = ['mu', 'tau']+['eta{}'.format(i) for i in range(J)]
 emcee_data = az.from_emcee(sampler, var_names=var_names).sel(draw=slice(100, None))
 az.plot_posterior(emcee_data, var_names=var_names[:3])
-plt.show()
+#plt.show()
+plt.savefig('test_arviz_fig1.svg', format='svg', dpi=1200)
+plt.close()
 
 emcee_data = az.from_emcee(sampler, slices=[0, 1, slice(2, None)])
 az.plot_trace(emcee_data, var_names=["var_2"], coords={"var_2_dim_0": 4})
-plt.show()
-
+#plt.show()
+plt.savefig('test_arviz_fig2.svg', format='svg', dpi=1200)
+plt.close()
 
 def lnprob_8school_blobs(theta, y, s):
     prior = log_prior_8school(theta)
@@ -102,5 +105,8 @@ data = az.from_emcee(
     coords={"school": range(8)}
 )
 az.plot_ppc(data, var_names=["y"], alpha=0.3, num_pp_samples=50)
-plt.show()
+#plt.show()
+plt.savefig('test_arviz_fig3.svg', format='svg', dpi=1200)
+plt.close()
+
 

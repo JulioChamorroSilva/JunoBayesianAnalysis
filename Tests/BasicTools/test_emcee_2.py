@@ -98,7 +98,9 @@ plt.xlim(0, 10)
 plt.xlabel("x")
 plt.ylabel("y");
 
-plt.show()
+#plt.show()
+plt.savefig('test_emcee_2_fig1.svg', format='svg', dpi=1200)
+plt.close()
 
 # now arviz plots
 import arviz as az
@@ -106,11 +108,18 @@ import arviz as az
 var_names = ['m','b','f']
 emcee_data = az.from_emcee(sampler, var_names=var_names)
 az.plot_posterior(emcee_data, var_names=var_names[:])
-plt.show()
+#plt.show()
+plt.savefig('test_emcee_2_fig2.svg', format='svg', dpi=1200)
+plt.close()
 
 # now trace plot
 az.plot_trace(emcee_data, var_names=var_names)
-plt.show()
+#plt.show()
+plt.savefig('test_emcee_2_fig3.svg', format='svg', dpi=1200)
+plt.close()
 
 az.plot_pair(emcee_data, var_names=var_names, kind='kde')
-plt.show()
+#plt.show()
+plt.savefig('test_emcee_2_fig4.svg', format='svg', dpi=1200)
+plt.close()
+

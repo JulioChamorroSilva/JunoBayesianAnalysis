@@ -84,11 +84,15 @@ fig.suptitle('Fitting wood hardness')
 axs[0].scatter(Data_x,Data_y)
 axs[0].plot(x_0,(m_ls*x_0+b_ls))
 axs[1].scatter(Data_x,Data_y-(m_ls*Data_x+b_ls))
-plt.show()
+#plt.show()
+plt.savefig('test_full_analysis_fig1.svg', format='svg', dpi=1200)
+plt.close()
+
 # plotting residual histograms
 plt.hist(Data_y-(m_ls*Data_x+b_ls))
-plt.show()
-
+#plt.show()
+plt.savefig('test_full_analysis_fig2.svg', format='svg', dpi=1200)
+plt.close()
 
 # now bayesian
 
@@ -145,14 +149,20 @@ inds = np.random.randint(len(flat_samples), size=100)
 var_names = ['m','b','s']
 emcee_data = az.from_emcee(sampler, var_names=var_names, blob_names=["silly"] )
 az.plot_posterior(emcee_data, var_names=var_names[:])
-plt.show()
+#plt.show()
+plt.savefig('test_full_analysis_fig3.svg', format='svg', dpi=1200)
+plt.close()
 
 # now trace plot
 az.plot_trace(emcee_data, var_names=var_names)
-plt.show()
+#plt.show()
+plt.savefig('test_full_analysis_fig4.svg', format='svg', dpi=1200)
+plt.close()
 
 az.plot_pair(emcee_data, var_names=var_names, kind='kde', marginals=True)
-plt.show()
+#plt.show()
+plt.savefig('test_full_analysis_fig5.svg', format='svg', dpi=1200)
+plt.close()
 
 print(flat_samples)
 print(blobs)
@@ -170,12 +180,17 @@ plt.scatter(Data_x,Data_y)
 plt.legend(fontsize=14)
 plt.xlabel("x")
 plt.ylabel("y");
-plt.show()
+#plt.show()
+plt.savefig('test_full_analysis_fig6.svg', format='svg', dpi=1200)
+plt.close()
 
 for i in range(len(Data_x)):
     plt.hist(blobs[:,i], bins=20 )
     plt.axvline(Data_y[i], color='r')
-    plt.show()
+    #plt.show()
+    plt.savefig('test_full_analysis_fig7_'+str(i)+'.svg', format='svg', dpi=1200)
+    plt.close()
+
 
 
 
