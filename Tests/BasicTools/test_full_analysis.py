@@ -112,7 +112,7 @@ def log_prior(theta):
         return 0.0
     return -np.inf
 
-ppc = np.zeros(len(Data_x))
+ppc = np.zeros(len(Data_x)) # posterior predictive check -  simulated data
 
 def log_probability(theta, x, y):
     lp = log_prior(theta)
@@ -131,10 +131,12 @@ def log_probability(theta, x, y):
 # first find maximum likelihood
 nll = lambda *args: -log_likelihood(*args)
 initial = np.array([50, -1000, 20]) # initial values from lest squared
-soln = minimize(nll, initial, args=(Data_x, Data_y))
-print("solution max. likelihood: ", soln)
+sol_ML_linear = minimize(nll, initial, args=(Data_x, Data_y))
+print("solution max. likelihood: ", sol_ML_linear)
 
-pos = soln.x + 1e-4 * np.random.randn(32, 3)
+
+# now sample bayesian distribution
+pos = sol_ML_linear.x + 1e-4 * np.random.randn(32, 3)
 nwalkers, ndim = pos.shape
 sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, args=(Data_x, Data_y))
 sampler.run_mcmc(pos, NSAMPLES, progress=True);
@@ -191,6 +193,89 @@ for i in range(len(Data_x)):
     plt.savefig('test_full_analysis_fig7_'+str(i)+'.svg', format='svg', dpi=1200)
     plt.close()
 
+#  now fit with fractional error
+# fe : fractional error
 
+MAX_S_FE = 1.
 
+def log_likelihood_fe(theta, x, y):
+    m, b, sigma_fe   = theta      # we need 3 parameters! The error is unknown
+    model         = m * x + b
+    return -0.5 * np.sum((y - model) ** 2 / (sigma_fe*y)**2 ) - np.sum(np.log(np.abs(sigma_fe*y))) - len(x) * np.log(np.sqrt(2 * np.pi))
 
+def log_prior_fe(theta):
+    m, b, sigma_fe = theta
+    if -1.*MAX_M < m < MAX_M and -1.*MAX_B < b < MAX_B and 0. < sigma_fe < MAX_S_FE:
+        return 0.0
+    return -np.inf
+
+def log_probability_fe(theta, x, y):
+    lp = log_prior_fe(theta)
+    if not np.isfinite(lp):
+        return -np.inf, ppc
+    # now calculate random samples
+    for i in range(len(Data_x)):
+        ppc[i] = theta[0] * Data_x[i] + theta[1] + np.random.normal(0., theta[2]*Data_y[i])
+
+    return lp + log_likelihood_fe(theta, x, y), ppc
+
+# first find maximum likelihood
+nll_fe = lambda *args: -log_likelihood_fe(*args)
+initial = np.array([50, -1000, 0.5]) # initial values from lest squared
+sol_ML_linear_fe = minimize(nll_fe, initial, args=(Data_x, Data_y))
+print("solution max. likelihood second model: ", sol_ML_linear_fe)
+
+# now sample bayesian distribution
+pos = sol_ML_linear_fe.x + 1e-4 * np.random.randn(32, 3)
+nwalkers, ndim = pos.shape
+sampler_fe = emcee.EnsembleSampler(nwalkers, ndim, log_probability_fe, args=(Data_x, Data_y))
+sampler_fe.run_mcmc(pos, NSAMPLES, progress=True);
+flat_samples_fe = sampler_fe.get_chain(discard=100, thin=15, flat=True)
+blobs_fe        = sampler_fe.get_blobs(discard=100, thin=15, flat=True)
+inds_fe = np.random.randint(len(flat_samples), size=100)
+
+# now plotting
+
+# now arviz plots
+
+var_names = ['m','b','s_fe']
+emcee_data_fe = az.from_emcee(sampler_fe, var_names=var_names, blob_names=["silly"] )
+az.plot_posterior(emcee_data_fe, var_names=var_names[:])
+plt.savefig('test_full_analysis_fig3_fe.svg', format='svg', dpi=1200)
+plt.close()
+
+# now trace plot
+az.plot_trace(emcee_data_fe, var_names=var_names)
+plt.savefig('test_full_analysis_fig4_fe.svg', format='svg', dpi=1200)
+plt.close()
+
+az.plot_pair(emcee_data_fe, var_names=var_names, kind='kde', marginals=True)
+plt.savefig('test_full_analysis_fig5.svg', format='svg', dpi=1200)
+plt.close()
+
+print(flat_samples_fe)
+print(blobs)
+print(blobs[0,:])
+print(blobs[:,0]) # this is the ppd of the first data
+
+inds = np.random.randint(len(flat_samples_fe), size=100)
+for ind in inds:
+    sample_fe = flat_samples_fe[ind]
+    loc_m = sample_fe[0]
+    loc_b = sample_fe[1]
+    plt.plot(x_0, loc_m * x_0 + loc_b, "C1", alpha=0.1)
+
+plt.scatter(Data_x,Data_y)
+plt.legend(fontsize=14)
+plt.xlabel("x")
+plt.ylabel("y");
+#plt.show()
+plt.savefig('test_full_analysis_fig6_fe.svg', format='svg', dpi=1200)
+plt.close()
+
+for i in range(len(Data_x)):
+    plt.hist(blobs_fe[:,i], bins=20 )
+    plt.axvline(Data_y[i], color='r')
+    #plt.show()
+    plt.savefig('test_full_analysis_fig7_'+str(i)+'_fe.svg', format='svg', dpi=1200)
+    plt.close()
