@@ -1,5 +1,6 @@
 import numpy as np
 import Model.Commons as com
+import Model.UnitsConstants as UC
 
 class SurvivalProbability_ME:
     """ This class represents the electron anti-neutrino oscillation probability
@@ -10,15 +11,15 @@ class SurvivalProbability_ME:
             self._DelM2_31 = params[1]
             self._Theta_12 = params[2]
             self._Theta_13 = params[3]
-            self._Ne       = params[4]
+            self._Rho       = params[4]
 
     def Pee( self, E, L):
         # missing matter effect
         #A        = -2. * np.sqrt(2) * com.Gf * self._Ne * E         
         DelM2_32 = self._DelM2_31 - self._DelM2_21 # m_3^2 - m_2^2 = ( m_3^2 - m_1^2 ) - ( m_2^2 - m_1^2 )
-        Delta31  = self._DelM2_31 * L / ( 4 * E )
-        Delta32  =       DelM2_32 * L / ( 4 * E )
-        Delta21  = self._DelM2_21 * L / ( 4 * E )
+        Delta31  = self._DelM2_31 * L * UC.C**3 / ( 4 * E * UC.Hbar )
+        Delta32  =       DelM2_32 * L * UC.C**3 / ( 4 * E * UC.Hbar )
+        Delta21  = self._DelM2_21 * L * UC.C**3 / ( 4 * E * UC.Hbar )
         term1   = np.sin( 2*self._Theta_13 )**2 * np.cos(   self._Theta_12 )**2 * np.sin( Delta31 )**2 
         term2   = np.sin( 2*self._Theta_13 )**2 * np.sin(   self._Theta_12 )**2 * np.sin( Delta32 )**2
         term3   = np.cos(   self._Theta_13 )**4 * np.sin( 2*self._Theta_12 )**2 * np.sin( Delta21 )**2
