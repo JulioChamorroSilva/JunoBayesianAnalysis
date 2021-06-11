@@ -5,6 +5,8 @@ from Model import Commons as com
 from Model import UnitsConstants as UC
 from Model import SurvivalProbability_ME
 
+plt.style.use('Styles/Paper.mplstyle')
+
 DelM2_21 = 7.53e-5*UC.eV**2/UC.C**4
 DelM2_31 = 2.5e-3*UC.eV**2/UC.C**4
 Theta_12 = 33.82*UC.deg
