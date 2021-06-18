@@ -7,12 +7,24 @@ import matplotlib.pyplot as plt
 import emcee
 from scipy.optimize import minimize
 import arviz as az
+import argparse
 
+# Define arguments and parse
+ap = argparse.ArgumentParser()
+ap.add_argument("-r", "--random_seed", type=int, default=20210614, dest='R0',
+   help="seed of random numbers", )
+ap.add_argument("-N", "--num_samples", type=int, default=10000, dest='N0',
+   help="numbers of sample for MCMC")
+ap.add_argument('-p', '--plot',  type=bool, default=True, dest='Plot',)
+args = vars(ap.parse_args())
+
+# Plotting style
 plt.style.use('Styles/Paper.mplstyle')
 
-NSAMPLES = 10000
-np.random.seed(20210426)
-plot = True
+# setting parameters
+NSAMPLES = args['N0']
+np.random.seed(args['R0'])
+plot = args['Plot']
 
 print("Bayesian model of Density and Hardness of Australian Timber")
 
