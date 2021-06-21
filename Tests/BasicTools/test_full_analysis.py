@@ -9,6 +9,7 @@ from scipy.optimize import minimize
 import arviz as az
 import argparse
 
+
 # Define arguments and parse
 ap = argparse.ArgumentParser()
 ap.add_argument("-r", "--random_seed", type=int, default=20210614, dest='R0',
@@ -93,11 +94,20 @@ if plot :
     x_0 = np.linspace(x_min,x_max,num=500)
     fig, axs = plt.subplots(2)
     fig.suptitle('Fitting wood hardness')
-    axs[0].scatter(Data_x,Data_y)
+    axs[0].scatter(Data_x,Data_y,label="name of data")
     axs[0].plot(x_0,(m_ls*x_0+b_ls))
-    axs[1].scatter(Data_x,Data_y-(m_ls*Data_x+b_ls))
+    axs[0].set_title("Wood Hardness Vs Density")
+    axs[0].set_ylabel("Hardness [a.u.]")
+    axs[1].set_xlabel("Density [a.u.]")
+    axs[1].scatter(Data_x,Data_y-(m_ls*Data_x+b_ls), label="name of data")
+    axs[1].set_ylabel("residuals [a.u.]")
+    axs[0].grid(True)
+    axs[1].grid(True)
+    axs[0].legend()
+    axs[1].legend()
     #plt.show()
-    plt.savefig('test_full_analysis_fig1.svg', format='svg', dpi=1200)
+    plt.savefig('test_full_analysis_fig1.png', format='png', dpi=1200)
+    plt.savefig('test_full_analysis_fig1.pdf', format='pdf', dpi=1200)
     plt.close()
     # plotting residual histograms
     plt.hist(Data_y-(m_ls*Data_x+b_ls))
