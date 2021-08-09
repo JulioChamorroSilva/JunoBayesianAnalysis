@@ -15,10 +15,10 @@ import matplotlib.pyplot as plt
 
 from timeit import default_timer as timer
 
-u235 = Spectrum_HM.Spectrum_HM("../juno-common/CommonInput/JUNOInputs2020_12_22.root","HuberMuellerFlux_U235")
-u238 = Spectrum_HM.Spectrum_HM("../juno-common/CommonInput/JUNOInputs2020_12_22.root","HuberMuellerFlux_U238")
-pu239 = Spectrum_HM.Spectrum_HM("../juno-common/CommonInput/JUNOInputs2020_12_22.root","HuberMuellerFlux_Pu239")
-pu241 = Spectrum_HM.Spectrum_HM("../juno-common/CommonInput/JUNOInputs2020_12_22.root","HuberMuellerFlux_Pu241")
+u235 = Spectrum_HM.Spectrum_HM("../juno-common/CommonInput/JUNOInputs2021_05_28.root","HuberMuellerFlux_U235")
+u238 = Spectrum_HM.Spectrum_HM("../juno-common/CommonInput/JUNOInputs2021_05_28.root","HuberMuellerFlux_U238")
+pu239 = Spectrum_HM.Spectrum_HM("../juno-common/CommonInput/JUNOInputs2021_05_28.root","HuberMuellerFlux_Pu239")
+pu241 = Spectrum_HM.Spectrum_HM("../juno-common/CommonInput/JUNOInputs2021_05_28.root","HuberMuellerFlux_Pu241")
 
 start = timer()
 print(integ.quadrature(u235.Rate,u235.low_limit, u235.high_limit, rtol = 0.0001, vec_func = False))

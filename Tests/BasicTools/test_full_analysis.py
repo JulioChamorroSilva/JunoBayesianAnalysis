@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import emcee
 from scipy.optimize import minimize
+import scipy.stats as st
 import arviz as az
 import argparse
 
@@ -66,7 +67,7 @@ Data = np.array([
    [68.8,2890],
    [69.1,2740],
    [69.1,3140]])
-print("Data: ", Data)
+#print("Data: ", Data)
 
 
 # Defining data arrays
@@ -94,25 +95,38 @@ if plot :
     x_0 = np.linspace(x_min,x_max,num=500)
     fig, axs = plt.subplots(2)
     fig.suptitle('Fitting wood hardness')
-    axs[0].scatter(Data_x,Data_y,label="name of data")
-    axs[0].plot(x_0,(m_ls*x_0+b_ls))
+    axs[0].scatter(Data_x,Data_y,label="Data source: E.J. Williams. Regression analysis")
+    axs[0].plot(x_0,(m_ls*x_0+b_ls), label="Linear Least Square")
     axs[0].set_title("Wood Hardness Vs Density")
-    axs[0].set_ylabel("Hardness [a.u.]")
+    axs[0].set_ylabel("Janka Hardness")
     axs[1].set_xlabel("Density [a.u.]")
-    axs[1].scatter(Data_x,Data_y-(m_ls*Data_x+b_ls), label="name of data")
-    axs[1].set_ylabel("residuals [a.u.]")
+    axs[1].scatter(Data_x,Data_y-(m_ls*Data_x+b_ls))
+    axs[1].set_ylabel("residuals")
     axs[0].grid(True)
     axs[1].grid(True)
-    axs[0].legend()
-    axs[1].legend()
-    #plt.show()
+    axs[0].legend(prop={'size': 15})
     plt.savefig('test_full_analysis_fig1.png', format='png', dpi=1200)
     plt.savefig('test_full_analysis_fig1.pdf', format='pdf', dpi=1200)
     plt.close()
+    
     # plotting residual histograms
-    plt.hist(Data_y-(m_ls*Data_x+b_ls))
-    #plt.show()
-    plt.savefig('test_full_analysis_fig2.svg', format='svg', dpi=1200)
+    residuals = Data_y-(m_ls*Data_x+b_ls)
+    res_iqr = st.iqr(residuals)
+    bw = 2 * res_iqr / (len(residuals)**(1/3))
+    nbins = int((max(residuals)-min(residuals))/bw)
+    print("residual histogram bins:", nbins )
+    hist, bin_edges = np.histogram( residuals, bins = nbins)
+    hist_norm = hist/(bin_edges[1:]-bin_edges[:-1])
+    plt.hist(bin_edges[:-1], bins = bin_edges, weights= hist_norm, label="LLS ({} entries)".format(len(residuals)))
+    plt.xlabel('Janks Hardness')
+    plt.ylabel('Density')
+    plt.title('Residuals')
+    #plt.text(60, .025, r'$\mu=100,\ \sigma=15$')
+    #plt.xlim(40, 160)
+    #plt.ylim(0, 0.03)
+    plt.grid(True)    
+    plt.legend()
+    plt.savefig('test_full_analysis_fig2.pdf', format='pdf', dpi=1200)
     plt.close()
 
 # now bayesian
@@ -155,7 +169,12 @@ def log_probability(theta, x, y):
 nll = lambda *args: -log_likelihood(*args)
 initial = np.array([50, -1000, 20]) # initial values from lest squared
 sol_ML_linear = minimize(nll, initial, args=(Data_x, Data_y))
-print("solution max. likelihood: ", sol_ML_linear)
+print("solution max. likelihood: ", sol_ML_linear.x)
+print(" MAx likelihoo errors:")
+print( np.sqrt(sol_ML_linear.hess_inv[0][0]))
+print( np.sqrt(sol_ML_linear.hess_inv[1][1]))
+print( np.sqrt(sol_ML_linear.hess_inv[2][2]))
+
 
 
 # now sample bayesian distribution
@@ -168,51 +187,73 @@ blobs        = sampler.get_blobs(discard=100, thin=15, flat=True)
 inds = np.random.randint(len(flat_samples), size=100)
 
 if plot :
+    print("Plot 3")
     # now plotting
     # now arviz plots
     var_names = ['m','b','s']
     emcee_data = az.from_emcee(sampler, var_names=var_names, blob_names=["silly"] )
-    az.plot_posterior(emcee_data, var_names=var_names[:])
+    postplot = az.plot_posterior(emcee_data, var_names=var_names[:],textsize=60,hdi_prob=0.66)
+    postplot[0].set_xlabel("Intercept", fontsize=60)
+    postplot[1].set_xlabel("Slope", fontsize=60)
+    postplot[2].set_xlabel("Error", fontsize=60)
     #plt.show()
-    plt.savefig('test_full_analysis_fig3.svg', format='svg', dpi=1200)
+    plt.savefig('test_full_analysis_fig3.pdf', format='pdf', dpi=1200)
     plt.close()
 
     # now trace plot
-    az.plot_trace(emcee_data, var_names=var_names)
-    #plt.show()
-    plt.savefig('test_full_analysis_fig4.svg', format='svg', dpi=1200)
+    print("Plot 4")
+    plottrace = az.plot_trace(emcee_data, var_names=var_names,plot_kwargs={"textsize":20})
+    plottrace[0][0].set_xlabel("Intercept", fontsize=20)
+    plottrace[1][0].set_xlabel("Slope", fontsize=20)
+    plottrace[2][0].set_xlabel("Error", fontsize=20)    
+    plt.savefig('test_full_analysis_fig4.pdf', format='pdf', dpi=1200)
     plt.close()
     
-    az.plot_pair(emcee_data, var_names=var_names, kind='kde', marginals=True)
+    print("Plot 5")
+    az.plot_pair(emcee_data, var_names=var_names, kind='kde', marginals=True, point_estimate = "mean", textsize = 60)#, kde_kwargs={"hdi_probs":[0.68,0.95,0.997]})
     #plt.show()
-    plt.savefig('test_full_analysis_fig5.svg', format='svg', dpi=1200)
+    plt.savefig('test_full_analysis_fig5.pdf', format='pdf', dpi=1200)
     plt.close()
 
-    print(flat_samples)
-    print(blobs)
-    print(blobs[0,:])
-    print(blobs[:,0]) # this is the ppd of the first data
+    print("Plot_5.1")
+    ax = az.plot_kde(
+            flat_samples[:, 0],
+            flat_samples[:, 1],
+            hdi_probs=[0.393, 0.865, 0.989],  # 1, 2 and 3 sigma contours
+            contourf_kwargs={"cmap": "Blues"},
+    )
 
+    ax.set_aspect("equal")
+    plt.savefig('test_full_analysis_fig5.1.pdf', format='pdf', dpi=1200)
+    plt.close()
+#    print(flat_samples)
+#    print(blobs)
+#    print(blobs[0,:])
+#    print(blobs[:,0]) # this is the ppd of the first data
+
+    print("Plot 6")
     inds = np.random.randint(len(flat_samples), size=100)
     for ind in inds:
         sample = flat_samples[ind]
         loc_m = sample[0]
         loc_b = sample[1]
-        plt.plot(x_0, loc_m * x_0 + loc_b, "C1", alpha=0.1)
+        if ( ind == inds[0] ):
+            plt.plot(x_0, loc_m * x_0 + loc_b, "C1", alpha=0.1, label = "Bayesian Linear Fit")
         
     plt.scatter(Data_x,Data_y)
     plt.legend(fontsize=14)
     plt.xlabel("x")
     plt.ylabel("y");
     #plt.show()
-    plt.savefig('test_full_analysis_fig6.svg', format='svg', dpi=1200)
+    plt.savefig('test_full_analysis_fig6.pdf', format='pdf', dpi=1200)
     plt.close()
 
+    print("Plot 7")
     for i in range(len(Data_x)):
         plt.hist(blobs[:,i+2], bins=20 ) # i+2: the first two blobs are prior and ll
         plt.axvline(Data_y[i], color='r')
         #plt.show()
-        plt.savefig('test_full_analysis_fig7_'+str(i)+'.svg', format='svg', dpi=1200)
+        plt.savefig('test_full_analysis_fig7_'+str(i)+'.pdf', format='pdf', dpi=1200)
         plt.close()
 
 print("--------------------------------")
@@ -264,17 +305,17 @@ if plot :
     # now arviz plots
     var_names = ['m','b','s_fe']
     emcee_data_fe = az.from_emcee(sampler_fe, var_names=var_names, blob_names=["silly"] )
-    az.plot_posterior(emcee_data_fe, var_names=var_names[:])
-    plt.savefig('test_full_analysis_fig3_fe.svg', format='svg', dpi=1200)
+    az.plot_posterior(emcee_data_fe, var_names=var_names[:],textsize=15)
+    plt.savefig('test_full_analysis_fig3_fe.pdf', format='pdf', dpi=1200)
     plt.close()
     
     # now trace plot
     az.plot_trace(emcee_data_fe, var_names=var_names)
-    plt.savefig('test_full_analysis_fig4_fe.svg', format='svg', dpi=1200)
+    plt.savefig('test_full_analysis_fig4_fe.pdf', format='pdf', dpi=1200)
     plt.close()
     
-    az.plot_pair(emcee_data_fe, var_names=var_names, kind='kde', marginals=True)
-    plt.savefig('test_full_analysis_fig5.svg', format='svg', dpi=1200)
+    az.plot_pair(emcee_data_fe, var_names=var_names, kind='kde', marginals=True, point_estimate = "mean", textsize = 20 )
+    plt.savefig('test_full_analysis_fig5_fe.pdf', format='pdf', dpi=1200)
     plt.close()
     
     print(flat_samples_fe)
@@ -291,14 +332,14 @@ if plot :
     plt.xlabel("x")
     plt.ylabel("y");
     #plt.show()
-    plt.savefig('test_full_analysis_fig6_fe.svg', format='svg', dpi=1200)
+    plt.savefig('test_full_analysis_fig6_fe.pdf', format='pdf', dpi=1200)
     plt.close()
 
     for i in range(len(Data_x)):
         plt.hist(blobs_fe[:,i+2], bins=20 )
         plt.axvline(Data_y[i], color='r')
         #plt.show()
-        plt.savefig('test_full_analysis_fig7_'+str(i)+'_fe.svg', format='svg', dpi=1200)
+        plt.savefig('test_full_analysis_fig7_'+str(i)+'_fe.pdf', format='pdf', dpi=1200)
         plt.close()
         
 # now we compare models
