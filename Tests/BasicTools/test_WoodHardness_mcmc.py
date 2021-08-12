@@ -5,7 +5,7 @@ Created on Mon Aug  9 08:31:33 2021
 
 @author: P.Chimenti
 
-This code run a bayesian mcmc on the data about wood hardness from table 15.5 of Dekking, et.al, "A Modern Introduction to
+This code models a bayesian mcmc on the data about wood hardness from table 15.5 of Dekking, et.al, "A Modern Introduction to
     Probability and Statistics" 
 
 """
@@ -73,17 +73,29 @@ class WoodHardness_mcmc:
         return 0
     
     def log_probability(self, theta):
-        return 0, 1
+        prob = 0
+        result = [prob] 
+        result.extend(np.ones(self.nblobs))
+        return result
         
-    def init(self):
-        self.theta = [0, 0, 0]
-        self.nsamples = 100
+    def init(self, nparams = 3, nsamples = 100, nblobs = 1, spread_factor = 1e-4):
+        self.theta         = np.zeros(nparams)
+        self.move_cov      = spread_factor*np.ones(nparams)
+        self.spread_factor = spread_factor
+        self.nsamples      = nsamples
+        self.nblobs        = nblobs
         
     def run_mcmc(self):
-        pos = self.theta + 1e-4 * np.random.randn(32, 3)
+        pos = self.theta + self.spread_factor * np.random.randn(1, len(self.theta))
         nwalkers, ndim = pos.shape
-        sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_probability)
-        sampler.run_mcmc(pos, self.nsamples, progress=True);
+        #        sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_probability)
+        sampler = emcee.EnsembleSampler(
+                nwalkers,
+                ndim,
+                self.log_probability,
+                moves = emcee.moves.GaussianMove(self.move_cov)
+                )
+        sampler.run_mcmc(pos, self.nsamples, progress=True, skip_initial_state_check = True);
         flat_samples = sampler.get_chain(flat=True)
         blobs        = sampler.get_blobs(flat=True)
         return flat_samples, blobs
