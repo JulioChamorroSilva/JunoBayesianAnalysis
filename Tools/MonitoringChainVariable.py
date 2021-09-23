@@ -33,8 +33,19 @@ class Monitor():
             var_plus = (((seq_samples-1)/seq_samples))*W+(B/seq_samples)
             R = np.sqrt(var_plus/W)
 
+            seq_means = [ np.mean(s)  for s in sequences]
+            mean     = np.mean(seq_means)
+            mean_err = np.std(seq_means)/np.sqrt(len(seq_means))
+            seq_stds  = [ np.std(s)   for s in sequences]
+            std      = np.mean(seq_stds)
+            std_err  = np.std(seq_stds)/np.sqrt(len(seq_stds))
+
             self.seq_samples = seq_samples
             self.sequences = sequences
+            self.mean = mean
+            self.mean_err  = mean_err
+            self.std  = std
+            self.std_err   = std_err 
             self.var_plus = var_plus
             self.R = R
             

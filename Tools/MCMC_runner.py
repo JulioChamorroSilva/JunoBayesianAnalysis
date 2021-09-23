@@ -16,7 +16,7 @@ class MCMC_runner:
     """ This is a base clas for running MCMC for bayesian analysis using emcee """
     
     def __init__(self):
-        print("Hello WoodHardness_mcmc!")
+        print("Hello mcmc runner!")
     
     def log_probability(self, theta):
         """ Distribution to be samples. To be reimplemented by inheritance. """        
