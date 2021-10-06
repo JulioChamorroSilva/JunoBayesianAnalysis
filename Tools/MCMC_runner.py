@@ -52,7 +52,7 @@ class MCMC_runner:
         """
         if not any(itheta):
             itheta = np.zeros(self.nparams)
-        thin_by = 1+self.nparams/5
+        thin_by = self.nparams
         iwalkers = np.array(itheta)+self.move_cov*np.random.randn(self.nwalkers,self.nparams)
         self.sampler.run_mcmc(iwalkers, nsamples, progress=True, skip_initial_state_check = True, thin_by = thin_by)
         flat_samples = self.sampler.get_chain(flat=True)
