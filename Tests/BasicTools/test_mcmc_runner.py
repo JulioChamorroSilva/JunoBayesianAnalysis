@@ -22,41 +22,29 @@ parser.add_argument("-p", "--params", type=int, dest='nparams',
                     help="Number of parameters to be considered")
 parser.add_argument("-n", "--stat-factor", type=int, dest='stat_factor',
                     help="Samples for each walker")
-parser.add_argument("-b", "--blobs", type=int, dest='blobs',
-                    help="blobs to be considered (not 1)")
-parser.add_argument("-t", "--thin", type=int, dest='thin',
-                    help="increase number of samples by this factor, but store only stats-factor per walker")
 parser.add_argument("-w", "--walkers", type=int, dest='walkers',
                     help="Number of walkers used in MCMC")
 parser.add_argument("-f", "--file-tag", type=str, dest='file_tag',
                     help="Tag used in files")
 parser.add_argument("-s", "--skip", type=int, dest='skip',
                     help="Number of samples to skip in analysis")
-parser.add_argument("-m", "--move-factor", type=float, dest='move_factor',
-                    help="Numeric factor of gaussian move")
 
 parser.set_defaults(run_mcmc     = True)
 parser.set_defaults(nparams      = 3)
 parser.set_defaults(stat_factor  = 1000)
-parser.set_defaults(blobs        = 2)
-parser.set_defaults(thin         = 1)
 parser.set_defaults(walkers      = 16)
 parser.set_defaults(file_tag     = "")
 parser.set_defaults(skip         = 16000)
-parser.set_defaults(move_factor  = 1.)
-
 
 args = parser.parse_args()
 print("Testing MCMC_runner with the following arguments:")
 print(args)
 
-
-runner = mr.MCMC_runner()
+runner = mr.MCMC_runner(nparams = args.nparams, nwalkers = args.walkers)
 
 # first run
 if args.run_mcmc:
-    runner.reset(itheta = 10.*np.ones(args.nparams), step_factor = args.move_factor, nsamples = args.stat_factor, nblobs = args.blobs, nwalkers = args.walkers)
-    samples, blobs = runner.run_mcmc(thin_by = args.thin)
+    samples, blobs = runner.run_mcmc(itheta = 10.*np.ones(args.nparams), nsamples = args.stat_factor)
     np.save('test_runner_mcmc_'+args.file_tag+'.npy', np.concatenate((samples, blobs), axis=1) )
 
 data = np.load('test_runner_mcmc_'+args.file_tag+'.npy')
