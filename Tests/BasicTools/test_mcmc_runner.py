@@ -61,19 +61,27 @@ print("Done!")
 
 
 print("Monitoring Variables...")
+chains_means = []
+chains_means_err = []
+chains_stdevs = []
+chains_stdevs_err = []
+
 discard_factor = args.skip/len(data[:,0])
-mon0 = MCV.Monitor(data[:,0], args.walkers, discard_factor)
-mon1 = MCV.Monitor(data[:,1], args.walkers, discard_factor)
-mon2 = MCV.Monitor(data[:,2], args.walkers, discard_factor)
-print("means:")
-print(round(mon0.mean,3)," PM ", round(mon0.mean_err,3)) 
-print(round(mon1.mean,3)," PM ", round(mon1.mean_err,3)) 
-print(round(mon2.mean,3)," PM ", round(mon2.mean_err,3)) 
-print("vars:")
-print(round(mon0.std,3)," PM ", round(mon0.std_err,3)) 
-print(round(mon1.std,3)," PM ", round(mon1.std_err,3)) 
-print(round(mon2.std,3)," PM ", round(mon2.std_err,3)) 
-print("reduction Factors:")
-print(round(mon0.R,5))
-print(round(mon1.R,5))
-print(round(mon2.R,5))
+print("mean \t meanerr \t std \t stderr")
+for i in range(args.nparams):
+    mon = MCV.Monitor(data[:,i], args.walkers, discard_factor)
+    chains_means.append(round(mon.mean,4))
+    chains_means_err.append(round(mon.mean_err,4))
+    chains_stdevs.append(round(mon.std,4))
+    chains_stdevs_err.append(round(mon.std_err,4))
+    print(chains_means[-1],chains_means_err[-1],chains_stdevs[-1],chains_stdevs_err[-1])
+
+plt.hist(chains_means)
+plt.show()
+plt.hist(chains_means_err)
+plt.show()
+plt.hist(chains_stdevs)
+plt.show()
+plt.hist(chains_stdevs_err)
+plt.show()
+
