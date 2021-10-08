@@ -13,11 +13,15 @@ from   matplotlib import pyplot as plt
 from Tools import MCMC_runner as mr
 from Tools import PlotChain as pc
 from Tools import MonitoringChainVariable as MCV
+from Tools import KDE_1d 
+from Tools import KDE_2d 
 
 
 parser = argparse.ArgumentParser(description='Tests the MCMC_runner class from Tools module.')
 parser.add_argument('--run-mcmc', dest='run_mcmc', action='store_true', help="Enable running the MCMC")
 parser.add_argument('--no-run-mcmc', dest='run_mcmc', action='store_false', help="Disable running the MCMC")
+parser.add_argument('--show', dest='show', action='store_true', help="Enable plt.show")
+parser.add_argument('--no-show', dest='show', action='store_false', help="Disable plt.show")
 parser.add_argument("-p", "--params", type=int, dest='nparams',
                     help="Number of parameters to be considered")
 parser.add_argument("-n", "--stat-factor", type=int, dest='stat_factor',
@@ -30,6 +34,7 @@ parser.add_argument("-s", "--skip", type=int, dest='skip',
                     help="Number of samples to skip in analysis")
 
 parser.set_defaults(run_mcmc     = True)
+parser.set_defaults(show         = False)
 parser.set_defaults(nparams      = 3)
 parser.set_defaults(stat_factor  = 1000)
 parser.set_defaults(walkers      = 16)
@@ -77,37 +82,68 @@ for i in range(args.nparams):
     print(chains_means[-1],chains_means_err[-1],chains_stdevs[-1],chains_stdevs_err[-1])
 
 plt.hist(chains_means)
-plt.show()
+if args.show : plt.show()
+plt.clf()
 plt.hist(chains_means_err)
-plt.show()
+if args.show : plt.show()
+plt.clf()
 plt.hist(chains_stdevs)
-plt.show()
+if args.show : plt.show()
+plt.clf()
 plt.hist(chains_stdevs_err)
-plt.show()
+if args.show : plt.show()
+plt.clf()
 
-x = np.linspace(0, 2 * np.pi, 400)
-y = np.sin(x ** 2)
 fig, axs = plt.subplots(4, 4, figsize=(20, 20))
-axs[0, 0].plot(x, y)
-axs[1, 0].plot(x, y**2)
-axs[1, 0].sharex(axs[0, 0])
-axs[0, 1].plot(x + 1, y + 1)
-axs[1, 1].plot(x + 2, y + 2)
+
 fig.delaxes(axs[0,1])
 fig.delaxes(axs[0,2])
 fig.delaxes(axs[0,3])
 fig.delaxes(axs[1,2])
 fig.delaxes(axs[1,3])
 fig.delaxes(axs[2,3])
-# axs[0,0].set_aspect('equal')
-# axs[1,0].set_aspect('equal')
-# axs[1,1].set_aspect('equal')
-# axs[2,0].set_aspect('equal')
-# axs[2,1].set_aspect('equal')
-# axs[2,2].set_aspect('equal')
-# axs[3,0].set_aspect('equal')
-# axs[3,1].set_aspect('equal')
-# axs[3,2].set_aspect('equal')
-# axs[3,3].set_aspect('equal')
-#fig.tight_layout()
 
+def PlotMarginalHist(ax, data):
+    kde_1 = KDE_1d.KDE_1d(data)
+    x,y,w = kde_1.getKDE()
+    b     = kde_1.getBins()
+    M_68, prob_68d     = kde_1.getPLMask(level=0.6827)
+    M_95, prob_95d     = kde_1.getPLMask(level=0.9545)
+    M_99, prob_99d     = kde_1.getPLMask(level=0.9973)
+    y_68           = np.array([0 if not M_68[i] else y[i] for i in range(len(y)) ])
+    y_95           = np.array([0 if not M_95[i] else y[i] for i in range(len(y)) ])
+    y_99           = np.array([0 if not M_99[i] else y[i] for i in range(len(y)) ])
+    ax.plot(x,y)
+    ax.hist(b[:-1],b,weights=y_99,color='yellow')
+    ax.hist(b[:-1],b,weights=y_95,color='orange')
+    ax.hist(b[:-1],b,weights=y_68,color='red')
+
+def PlotJoint(ax, data1, data2):
+    kde_2 = KDE_2d.KDE_2d(data1,data2)
+    x,y,z = kde_2.getKDE(gridfactor = 1)
+    M_2d, prob_2d_1 = kde_2.getPLMask(level=0.6827)
+    M_2d, prob_2d_2 = kde_2.getPLMask(level=0.9545)
+    M_2d, prob_2d_3 = kde_2.getPLMask(level=0.9973)
+    mean_x=np.mean(data[:args.skip,0])
+    mean_y=np.mean(data[:args.skip,1])
+    ax.contourf(x,y,z,[0.,prob_2d_3,prob_2d_2,prob_2d_1,1.001*np.amax(z)],colors=('white','yellow','orange','red'))
+    #plt.colorbar(cf,ax=ax)
+    ax.plot(mean_x,mean_y,'ro') 
+
+PlotJoint(axs[1,0],data[args.skip:,0],data[args.skip:,1])
+PlotJoint(axs[2,0],data[args.skip:,0],data[args.skip:,2])
+PlotJoint(axs[3,0],data[args.skip:,0],data[args.skip:,3])
+PlotJoint(axs[2,1],data[args.skip:,1],data[args.skip:,2])
+PlotJoint(axs[3,1],data[args.skip:,1],data[args.skip:,3])
+PlotJoint(axs[3,2],data[args.skip:,2],data[args.skip:,3])
+
+
+PlotMarginalHist(axs[0,0],data[args.skip:,0])
+PlotMarginalHist(axs[1,1],data[args.skip:,1])
+PlotMarginalHist(axs[2,2],data[args.skip:,2])
+PlotMarginalHist(axs[3,3],data[args.skip:,3])
+
+
+fig.savefig("TestTriangle.png")
+#fig.tight_layout()
+#plt.show(fig)
