@@ -17,39 +17,39 @@ import scipy.optimize
 class KDE_1d:
     def __init__(self, data):
         self.data = data
+        self.setInterval()
         self.points = np.array([])
         self.vals   = np.array([]) 
         self.step   = 0
     
-    def getKDE(self, bandwidth = 0, gridfactor = 5, xmin = 0, xmax = 0):
+    def setInterval(self):
         min = np.amin(self.data)
         max = np.amax(self.data)
-        std = np.std(self.data)
+        self.std = np.std(self.data)
+        self.xmin = min-self.std
+        self.xmax = max+self.std
+    
+    def getKDE(self, bandwidth = 0, gridfactor = 5):
+
         if bandwidth == 0:
-            bandwidth = 1.06*std/(len(self.data)**(1.0/5))
-        if xmin == 0:
-            xmin = min-std
-        if xmax == 0:
-            xmax = max+std
+            bandwidth = 1.06*self.std/(len(self.data)**(1.0/5))
 
-        points = np.arange(xmin,xmax,bandwidth/gridfactor)
-        vals = np.zeros(len(points))
-        for i in range(len(vals)):
-            vals[i] = sum(1./(np.sqrt(2.*np.pi)*bandwidth)*np.exp(-np.power((points[i] - self.data)/bandwidth, 2.)/2))
-
-        norm = np.sum(vals)*bandwidth/gridfactor
-        vals = vals/norm
-
-        self.points = points
-        self.vals   = vals 
+        self.points = np.arange(self.xmin,self.xmax,bandwidth/gridfactor)
+        self.vals = np.zeros(len(self.points))
         self.step   = bandwidth/gridfactor
+        self.bins = self.points - self.step/2
+        self.bins = np.append(self.bins, [self.bins[-1]+self.step])
+
+        for i in range(len(self.vals)):
+            self.vals[i] = sum(1./(np.sqrt(2.*np.pi)*bandwidth)*np.exp(-np.power((self.points[i] - self.data)/bandwidth, 2.)/2))
+
+        norm = np.sum(self.vals)*bandwidth/gridfactor
+        self.vals = self.vals/norm
         
-        return points, vals, bandwidth/gridfactor
+        return self.points, self.vals, bandwidth/gridfactor
 
     def getBins(self):
-        bins = self.points - self.step/2
-        bins = np.append(bins, [bins[-1]+self.step])
-        return bins
+        return self.bins
 
     def objective( self, density, prob):
         mask = self.vals>density
