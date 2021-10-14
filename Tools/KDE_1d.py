@@ -20,6 +20,7 @@ class KDE_1d:
         self.data = data
         self.setInterval()
         self.points = np.array([])
+        self.bins   = np.array([])
         self.vals   = np.array([]) 
         self.step   = 0
     
@@ -35,24 +36,25 @@ class KDE_1d:
         if bandwidth == 0:
             bandwidth = 1.06*self.std/(len(self.data)**(1.0/5))
 
-        self.points = np.arange(self.xmin,self.xmax,bandwidth/gridfactor)
+        self.points = np.arange(self.xmin,self.xmax+bandwidth/gridfactor,bandwidth/gridfactor)
         self.vals = np.zeros(len(self.points))
         self.step   = bandwidth/gridfactor
         self.bins = self.points - self.step/2
         self.bins = np.append(self.bins, [self.bins[-1]+self.step])
 
-        spread_factors = [norm.cdf(-5 + (i+0.5/gridfactor))-norm.cdf(-5 + ((i-0.5)/gridfactor)) for i in range(10*gridfactor+1)]
+        spread_factors = [norm.cdf(-5 + ((i+0.5)/gridfactor))-norm.cdf(-5 + ((i-0.5)/gridfactor)) for i in range(10*gridfactor+1)]
+
         self.vals = np.histogram(self.data,bins = self.bins)[0]
 
         spreaded = np.zeros(len(self.vals))
         for i in range(10*gridfactor+1):
-            spreaded[i:len(spreaded)-10*gridfactor+i] += spread_factors[i]*self.vals[5*gridfactor:-(5*gridfactor)] 
+            spreaded[i:-10*gridfactor+i-1] += spread_factors[i]*self.vals[5*gridfactor:-(5*gridfactor)-1] 
         self.vals = spreaded
 
         normalization = np.sum(self.vals)*bandwidth/gridfactor
         self.vals = self.vals/normalization
         
-        return self.points, self.vals, bandwidth/gridfactor
+        return self.points, self.vals, self.step
 
     def getBins(self):
         return self.bins
