@@ -12,6 +12,7 @@ It needs an array of 1d measurements.
 
 import numpy as np
 import scipy.optimize
+from scipy.stats import norm 
 
 
 class KDE_1d:
@@ -40,11 +41,16 @@ class KDE_1d:
         self.bins = self.points - self.step/2
         self.bins = np.append(self.bins, [self.bins[-1]+self.step])
 
-        for i in range(len(self.vals)):
-            self.vals[i] = sum(1./(np.sqrt(2.*np.pi)*bandwidth)*np.exp(-np.power((self.points[i] - self.data)/bandwidth, 2.)/2))
+        spread_factors = [norm.cdf(-5 + (i+0.5/gridfactor))-norm.cdf(-5 + ((i-0.5)/gridfactor)) for i in range(10*gridfactor+1)]
+        self.vals = np.histogram(self.data,bins = self.bins)[0]
 
-        norm = np.sum(self.vals)*bandwidth/gridfactor
-        self.vals = self.vals/norm
+        spreaded = np.zeros(len(self.vals))
+        for i in range(10*gridfactor+1):
+            spreaded[i:len(spreaded)-10*gridfactor+i] += spread_factors[i]*self.vals[5*gridfactor:-(5*gridfactor)] 
+        self.vals = spreaded
+
+        normalization = np.sum(self.vals)*bandwidth/gridfactor
+        self.vals = self.vals/normalization
         
         return self.points, self.vals, bandwidth/gridfactor
 
