@@ -88,5 +88,15 @@ class KDE_2d:
         prob = scipy.optimize.bisect(self.objective, self.vals.min(), self.vals.max(), args=(level,))
         mask = self.vals>prob
         return mask, prob
-        
+    
+    def Plot(self, ax):
+        x,y,z,step_x,step_y = self.getKDE()
+        M_2d, prob_2d_1 = self.getPLMask(level=0.6827)
+        M_2d, prob_2d_2 = self.getPLMask(level=0.9545)
+        M_2d, prob_2d_3 = self.getPLMask(level=0.9973)
+        mean_x=np.mean(self.data_x)
+        mean_y=np.mean(self.data_y)
+        ax.contourf(x,y,z,[0.,prob_2d_3,prob_2d_2,prob_2d_1,1.001*np.amax(z)],colors=('white','yellow','orange','red'))
+        ax.plot(mean_x,mean_y,'bo')     
+            
         

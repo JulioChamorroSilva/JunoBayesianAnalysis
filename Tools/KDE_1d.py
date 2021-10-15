@@ -13,7 +13,7 @@ It needs an array of 1d measurements.
 import numpy as np
 import scipy.optimize
 from scipy.stats import norm 
-
+from matplotlib  import pyplot as plt
 
 class KDE_1d:
     def __init__(self, data):
@@ -70,4 +70,18 @@ class KDE_1d:
         mask = self.vals>prob
         return mask, prob
         
-        
+    def Plot(self, ax):
+        x,y,w = self.getKDE()
+        b     = self.getBins()
+        M_68, prob_68d     = self.getPLMask(level=0.6827)
+        M_95, prob_95d     = self.getPLMask(level=0.9545)
+        M_99, prob_99d     = self.getPLMask(level=0.9973)
+        y_68           = np.array([0 if not M_68[i] else y[i] for i in range(len(y)) ])
+        y_95           = np.array([0 if not M_95[i] else y[i] for i in range(len(y)) ])
+        y_99           = np.array([0 if not M_99[i] else y[i] for i in range(len(y)) ])
+        mean_x=np.mean(self.data)
+        ax.plot(x,y)
+        ax.hist(b[:-1],b,weights=y_99,color='yellow')
+        ax.hist(b[:-1],b,weights=y_95,color='orange')
+        ax.hist(b[:-1],b,weights=y_68,color='red')
+        ax.axvline(mean_x, color='b', linestyle='dashed')
