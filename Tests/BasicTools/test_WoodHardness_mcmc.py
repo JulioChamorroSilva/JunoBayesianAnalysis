@@ -13,7 +13,9 @@ This code models a bayesian mcmc on the data about wood hardness from table 15.5
 import numpy as np
 import emcee
 
-class WoodHardness_mcmc:
+from Tools import MCMC_runner as mr
+
+class WoodHardness_mcmc(mr.MCMC_runner):
     """ This class allow to run bayesian MCMC to analisez thw wood hardness data """
     
     """ The wood hardness data: """
@@ -58,71 +60,12 @@ class WoodHardness_mcmc:
     Data_x = Data[:,0]
     Data_y = Data[:,1]
 
-    def __init__(self):
-        print("Hello WoodHardness_mcmc!")
-
-    def log_likelihood(self, theta):
-        """ Likelihood of the model """
-        return 0
-    
-    def log_prior(self, theta):
-        """ Model prior """
-        return 0
+    def __init__(self, nparams = 3, nwalkers = 16, move_cov = []):
+        super.__init__( nparams, nwalkers, move_cov)
+        
+        
+    def reset(self):
+        pass
     
     def log_probability(self, theta):
-        """ Posterior probability
-        for now just gaussian centered in zero and sigma 1 """        
-        log_prob = -1.0*(sum(theta**2))/2. 
-        result = [log_prob] 
-        result.extend(np.ones(self.nblobs))
-        return result
-        
-    def reset(self, nparams = 3, itheta = [], nwalkers = 16, nsamples = 100, nblobs = 1, step_factor = 1.0, move_cov = []):
-        """ This function set initial configuration to run the mcmc 
-        nparams : number of parameters
-        itheta : parameters initial values
-        nwalkers : number of walker for ensamble sampling
-        nsamples : sample of mcmc
-        nblobs : number of blobs (see emcee docs)
-        step_factor :  to adjust the step size
-        move_cov : covariance of the gaussian move """
-        if not any(itheta) :
-            self.nparams = nparams
-            self.itheta  = np.zeros(nparams)
-        else :
-            self.nparams = len(itheta)
-            self.itheta  = itheta
-        self.nwalkers = nwalkers
-        if not any(move_cov) :
-            self.move_cov   = step_factor*np.ones(self.nparams)
-        self.step_factor    = step_factor
-        self.nsamples       = nsamples
-        self.nblobs         = nblobs
-        
-    def run_mcmc(self, thin_by = 1):
-        """ Here we actually run the MCMC with gaussian moves.
-        The function returns parameters samples and blobs 
-        
-        Thin_by : multiply this number to the number of samples to save to get the total samples
-        
-        """
-        iwalkers = np.array(self.itheta)+self.move_cov*np.random.randn(self.nwalkers,self.nparams)
-        print(iwalkers.shape)
-        nwalkers, ndim     = iwalkers.shape
-        sampler = emcee.EnsembleSampler(
-                nwalkers,
-                ndim,
-                self.log_probability,
-                    moves=[
-                            (emcee.moves.StretchMove(live_dangerously = True), 0.8),
-                            (emcee.moves.GaussianMove(self.move_cov,  mode="sequential"), 0.2)
-                            ],
-                )
-        sampler.run_mcmc(iwalkers, self.nsamples, progress=True, skip_initial_state_check = True, thin_by = thin_by)
-        flat_samples = sampler.get_chain(flat=True)
-        blobs        = sampler.get_blobs(flat=True)
-        return flat_samples, blobs
-
-    
-
-
+        pass
