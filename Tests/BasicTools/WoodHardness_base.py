@@ -61,7 +61,7 @@ class WoodHardness_base(mr.MCMC_runner):
 
     def __init__(self, nparams = 3, nwalkers = 16, move_cov = []):
         mr.MCMC_runner.__init__(self, nparams=nparams, nwalkers=nwalkers, move_cov=move_cov)
-        
+        self.nblobs = 2+2*len(self.Data_x)        
         
     def reset(self, data_mask=[]):
             if not any(data_mask) :
@@ -74,6 +74,7 @@ class WoodHardness_base(mr.MCMC_runner):
                 self.Data_y_fit    = self.Data_y[data_mask]                
                 self.Data_x_test   = self.Data_x[np.invert(data_mask)]
                 self.Data_y_test   = self.Data_y[np.invert(data_mask)]                
-
-#    def log_probability(self, theta):
-#        return 1
+            self.fit_loglikes     = np.zeros(len(self.Data_x_fit))
+            self.fit_randomsample = np.zeros(len(self.Data_x_fit))
+            self.test_loglikes     = np.zeros(len(self.Data_x_test))
+            self.test_randomsample = np.zeros(len(self.Data_x_test))
