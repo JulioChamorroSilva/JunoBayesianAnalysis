@@ -78,3 +78,5 @@ class WoodHardness_base(mr.MCMC_runner):
             self.fit_randomsample = np.zeros(len(self.Data_x_fit))
             self.test_loglikes     = np.zeros(len(self.Data_x_test))
             self.test_randomsample = np.zeros(len(self.Data_x_test))
+            mr.MCMC_runner.reset(self)
+            

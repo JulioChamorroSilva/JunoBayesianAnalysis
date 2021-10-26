@@ -33,6 +33,9 @@ class MCMC_runner:
                             (emcee.moves.GaussianMove((self.move_cov/nparams),  mode="vector"), 0.2)
                             ],
                 )
+
+    def reset(self):
+        self.sampler.reset()
     
     def log_probability(self, theta):
         """ Distribution to be samples. To be reimplemented by inheritance.

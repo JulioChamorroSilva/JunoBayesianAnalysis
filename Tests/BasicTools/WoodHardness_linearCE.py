@@ -8,7 +8,6 @@ Created on Thu Oct 21 08:48:28 2021
 
 """
 
-
 import numpy as np
 
 from Tests.BasicTools import WoodHardness_base as whb
