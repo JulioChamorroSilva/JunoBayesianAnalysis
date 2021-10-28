@@ -45,12 +45,13 @@ print(args)
 walkers = 16
 
 linearCE_runner = whlce.WoodHardness_linearCE()
+mask = [True]*len(linearCE_runner.Data_x)
+linearCE_runner.reset(mask)
+
 
 
 if args.run_mcmc:
     #mask = np.random.choice(a=[False, True], size=len(linearCE_runner.Data_x), p=[0.5, 1-0.5])
-    mask = [True]*len(linearCE_runner.Data_x)
-    linearCE_runner.reset(mask)
     samples, blobs = linearCE_runner.run_mcmc(itheta = 500*np.ones(3), nsamples = args.stat_factor)
     np.save('test_wh_linearCE_'+args.file_tag+'.npy', np.concatenate((samples, blobs), axis=1) )
 
@@ -66,6 +67,7 @@ if args.run_mcmc:
     
 data = np.load('test_wh_linearCE_'+args.file_tag+'.npy')
 #print(data[0,:])
+
 print("Plotting chains...")
 apc = pc.PlotChain()
 apc.Plot(data[:,0], "m", file_tag = args.file_tag)
@@ -128,5 +130,30 @@ fig.savefig("TestTriangle_WH_LinearCE"+args.file_tag+".png")
 plt.clf()
 print("Done!")
 
+for i in range(len(linearCE_runner.Data_x_fit)):
+    plt.hist(data[args.skip:,41+i])
+    plt.axvline(x=linearCE_runner.Data_y_fit[i],c='r')
+    plt.savefig("TestPosteriorMeasurements_WH_LinearCE"+args.file_tag+'_'+str(i).zfill(2)+".png")
+    plt.clf()
 
+inds = np.random.randint(len(data[args.skip:,0]), size=100)
+for ind in inds:
+    print(ind)
+    loc_m = data[args.skip+ind,0]
+    loc_b = data[args.skip+ind,1]
+    print(loc_m,loc_b)
+    y_data = linearCE_runner.Data_y_fit
+    x_data = linearCE_runner.Data_x_fit
+    if ( ind == inds[0] ):
+        plt.plot(x_data, loc_m * x_data + loc_b, "C1", alpha=0.1, label = "Bayesian Linear Fit CE")
+    else:
+        plt.plot(x_data, loc_m * x_data + loc_b, "C1", alpha=0.1)
+
+plt.scatter(x_data,y_data)
+plt.legend(fontsize=14)
+plt.xlabel("x")
+plt.ylabel("y");
+#plt.show()
+plt.savefig("TestFitMeans_WH_LinearCE"+args.file_tag+".png")
+plt.close()
 
