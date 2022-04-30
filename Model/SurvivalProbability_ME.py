@@ -28,7 +28,7 @@ class SurvivalProbability_ME:
         DelM2_31_ME = DelM2_ee_ME + (np.sin( Theta_12_ME )**2) * DelM2_21_ME 
         DelM2_32_ME = DelM2_31_ME - DelM2_21_ME
         Delta21_ME = np.sqrt(DelM2_21_ME) * L * UC.Hbar / (4 * E * UC.C**3 * 1e15 ) # Delta has dimentional unit of eV^2/c * Km * GeV^-1, so to to convert GeV and eV back to natural units we have to multiply by Hbar / 10^15 * c^3
-        Delta32_ME = np.sqrt(DelM2_32_ME) * L * UC.Hbar / (4 * E * UC.C**3 * 1e15 ) # Delta has dimentional unit of eV^2/c * Km * GeV^-1, so to to convert GeV and eV back to natural units we have to multiply by Hbar / 10^15 * c^3
+        Delta32_ME = np.sqrt(DelM2_32_ME) * L * UC.Hbar / (4 * E * UC.C**3 * 1e15 ) # This function has show an error message for the sqrt function Delta has dimentional unit of eV^2/c * Km * GeV^-1, so to to convert GeV and eV back to natural units we have to multiply by Hbar / 10^15 * c^3
         Delta31_ME = np.sqrt(DelM2_31_ME) * L * UC.Hbar / (4 * E * UC.C**3 * 1e15 ) # Delta has dimentional unit of eV^2/c * Km * GeV^-1, so to to convert GeV and eV back to natural units we have to multiply by Hbar / 10^15 * c^3
         term1   = np.sin( 2*Theta_13_ME )**2 * np.cos(   Theta_12_ME )**2 * np.sin( Delta31_ME )**2 
         term2   = np.sin( 2*Theta_13_ME )**2 * np.sin(   Theta_12_ME )**2 * np.sin( Delta32_ME )**2
