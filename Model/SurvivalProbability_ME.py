@@ -17,10 +17,10 @@ class SurvivalProbability_ME:
         # equations for the effect of matter added
         # all relevant variables are isolated so they can be calculated and input on the final equations
         N_e      = self._Rho/(2*UC.M_p)
-        A        = -1.*( 2*np.sqrt(2) * UC.Gf * N_e * E * UC.Hbar * UC.C) #multiplying by Hbar * c is necessary to return the variable to natural units 
+        A        = -1.*( 2*np.sqrt(2) * UC.Gf * N_e * E * UC.Hbar**3 * UC.C)  
         DelM2_32 = self._DelM2_31 - self._DelM2_21 
         DelM2_ee = np.cos(  self._Theta_12  )**2 * self._DelM2_31 + np.sin(  self._Theta_12  )**2 * DelM2_32
-        DelM2_ee_ME = DelM2_ee * np.sqrt(  np.cos(  2 * self._Theta_13  )**2 + np.sin(  2 * self._Theta_13  ) )
+        DelM2_ee_ME = DelM2_ee * np.sqrt( (  np.cos(  2 * self._Theta_13  ) - (A / DelM2_ee) )**2 + np.sin(  2 * self._Theta_13  )**2 )
         A_ME = (A + DelM2_ee - DelM2_ee_ME)/2 
         DelM2_21_ME = self._DelM2_21 * np.sqrt( ( np.cos(2 * self._Theta_12) - A_ME/self._DelM2_21 )**2 + ( DelM2_ee_ME + DelM2_ee - A * np.cos( self._Theta_13 ))/2 * np.sin(self._Theta_12)**2 )
         Theta_13_ME = 1 / (2 * np.cos((DelM2_ee * np.cos(2 * self._Theta_13) - A) / DelM2_ee_ME))

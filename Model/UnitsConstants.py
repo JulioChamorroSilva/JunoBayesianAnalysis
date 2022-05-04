@@ -18,7 +18,7 @@ eV   = Q_ep                 # electron volt em Joules
 MeV  = 1e6*eV
 GeV  = 1e9*eV
 
-Gf   = 1.1663787E-5*(GeV**-2)   # Fermi constant
+Gf   = 1.1663787E-5*(GeV**-2)   # Fermi constant over (hbar c)^3
 
 M_p  = 938.27208816*MeV/C**2  # Proton mass
 M_n  = 939.56542052*MeV/C**2  # Neutron mass
