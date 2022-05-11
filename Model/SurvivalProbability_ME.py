@@ -1,6 +1,8 @@
 import numpy as np
 import Model.Commons as com
 import Model.UnitsConstants as UC
+import warnings
+
 
 class SurvivalProbability_ME:
     """ This class represents the electron anti-neutrino oscillation probability
@@ -24,9 +26,27 @@ class SurvivalProbability_ME:
         Cos2_theta_13_ME_minus_theta_13 = (DelM2_ee_ME + DelM2_ee - A * np.cos(2 * self._Theta_13)) / (2 * DelM2_ee_ME)
         DelM2_21_ME = self._DelM2_21 * np.sqrt( ( np.cos(2 * self._Theta_12) - A_ME/self._DelM2_21 )**2 + Cos2_theta_13_ME_minus_theta_13 * np.sin(2 * self._Theta_12)**2 )
         Cos2theta13_ME = (DelM2_ee * np.cos(2 * self._Theta_13) - A) / DelM2_ee_ME
-        Theta_13_ME = 1 / ( np.cos(Cos2theta13_ME) * 2 )
-        Cos2theta12_ME = (self._DelM2_21 * np.cos(self._Theta_12) - A_ME) / DelM2_21_ME
-        Theta_12_ME = 1 / ( np.cos(Cos2theta12_ME) * 2 )
+        warnings.filterwarnings("error")
+        try:
+            Theta_13_ME = np.arccos(Cos2theta13_ME)/2.
+        except RuntimeWarning:
+            print("Debugging Warning")
+            print("Cos2theta13_ME", Cos2theta13_ME)
+            print("Theta_13_ME", Theta_13_ME)
+            print("Theta_13", self._Theta_13)
+
+
+        Cos2theta12_ME = (self._DelM2_21 * np.cos(2 * self._Theta_12) - A_ME) / DelM2_21_ME
+
+        warnings.catch_warnings()
+        try:
+            Theta_12_ME = np.arccos(Cos2theta12_ME)/2.
+        except RuntimeWarning :
+            print("Debugging Warning")
+            print("Cos2theta12_ME", Cos2theta12_ME)
+            print("Theta_12_ME", Theta_12_ME)
+            print("Theta_12", self._Theta_12)
+
         DelM2_31_ME = DelM2_ee_ME + (np.sin( Theta_12_ME )**2) * DelM2_21_ME 
         DelM2_32_ME = DelM2_31_ME - DelM2_21_ME
         Delta21_ME = (DelM2_21_ME * L * UC.C**3 ) / (4 * E * UC.Hbar ) 
