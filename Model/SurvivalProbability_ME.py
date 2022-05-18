@@ -26,7 +26,6 @@ class SurvivalProbability_ME:
         Cos2_theta_13_ME_minus_theta_13 = (DelM2_ee_ME + DelM2_ee - A * np.cos(2 * self._Theta_13)) / (2 * DelM2_ee_ME)
         DelM2_21_ME = self._DelM2_21 * np.sqrt( ( np.cos(2 * self._Theta_12) - A_ME/self._DelM2_21 )**2 + Cos2_theta_13_ME_minus_theta_13 * np.sin(2 * self._Theta_12)**2 )
         Cos2theta13_ME = (DelM2_ee * np.cos(2 * self._Theta_13) - A) / DelM2_ee_ME
-        """ debugget here """
         Theta_13_ME = np.arccos(Cos2theta13_ME)/2.
         Cos2theta12_ME = (self._DelM2_21 * np.cos(2 * self._Theta_12) - A_ME) / DelM2_21_ME
         Theta_12_ME = np.arccos(Cos2theta12_ME)/2.
