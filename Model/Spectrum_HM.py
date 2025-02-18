@@ -8,13 +8,13 @@ It is based on juno common inputs
 
 @author: chimenti
 """
-import ROOT
+import uproot #uproot is the VSCode friendly version of ROOT necessary to smoothly run on Windows
 from Model import UnitsConstants as UC
 import math
 
 class Spectrum_HM():
     def __init__(self, path, name):
-        self.file_common = ROOT.TFile(path,"READ")
+        self.file_common = uproot.TFile(path,"READ")
         self.f_HuberMuellerFlux = self.file_common.Get(name) 
         self.nbins      = self.f_HuberMuellerFlux.GetNbinsX()
         self.low_limit  = self.f_HuberMuellerFlux.GetBinLowEdge( 1 )*UC.MeV 
