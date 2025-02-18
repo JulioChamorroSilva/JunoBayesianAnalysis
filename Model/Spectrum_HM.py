@@ -14,7 +14,7 @@ import math
 
 class Spectrum_HM():
     def __init__(self, path, name):
-        self.file_common = uproot.open(path,"READ")
+        self.file_common = uproot.WritableFile(path,"READ")
         self.f_HuberMuellerFlux = self.file_common.Get(name) 
         self.nbins      = self.f_HuberMuellerFlux.GetNbinsX()
         self.low_limit  = self.f_HuberMuellerFlux.GetBinLowEdge( 1 )*UC.MeV 
